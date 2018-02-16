@@ -2,7 +2,7 @@ import {run} from '@cycle/run'
 import {makeDOMDriver} from '@cycle/dom'
 import {Component} from './interfaces'
 
-import {App} from './app'
+import App from './components/App'
 
 const main : Component = App
 

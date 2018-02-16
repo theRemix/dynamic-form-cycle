@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
+    "@cycle/isolate": "^3.2.0",
     "cycle-scripts": "2.1.0"
   },
   "dependencies": {
