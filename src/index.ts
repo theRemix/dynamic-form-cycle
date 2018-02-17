@@ -1,13 +1,14 @@
 import {run} from '@cycle/run'
 import {makeDOMDriver} from '@cycle/dom'
-import {Component} from './interfaces'
+import onionify from 'cycle-onionify';
 
+import {Component} from './interfaces'
 import App from './components/App'
 
-const main : Component = App
+const main : Component = onionify(App, 'onion')
 
-const drivers = {
-  DOM: makeDOMDriver('#root')
+const drivers:any = {
+  DOM: makeDOMDriver('#root'),
 }
 
 run(main, drivers)
