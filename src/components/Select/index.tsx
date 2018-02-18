@@ -9,7 +9,7 @@ interface Sources {
   onion: StateSource<State>;
 };
 
-export default function Select(sources : Sources) : Sinks {
+export default function Select(sources$ : Sources) : Sinks {
 
   // const vtree$ = xs.of(
   //   <select>
@@ -21,8 +21,8 @@ export default function Select(sources : Sources) : Sinks {
   // )
 
   return {
-    DOM: view(sources.onion.state$),
-    onion: intent(sources.DOM)
+    DOM: view(sources$.onion.state$),
+    onion: intent(sources$.DOM)
   }
 }
 

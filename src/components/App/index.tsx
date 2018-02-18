@@ -7,7 +7,10 @@ import Select from '../Select'
 
 function defaultReducer (prev: State): State {
   return (typeof prev === 'undefined') ? {
-    count: 0
+    bigCount: 100,
+    childCount: {
+      count: 0
+    }
   } : prev
 }
 
@@ -19,9 +22,9 @@ function model (action$: Stream<number>): Stream<Reducer> {
   const defaultReducer$ = xs.of(defaultReducer);
 
   // everytime action$ emits, addOneReducer triggers
-  const addOneReducer$ = xs.combine(action$, xs.periodic(5000))
+  const addOneReducer$ = xs.combine(action$, xs.periodic(1000))
     .map(([num, i]) => function addOneReducer(prev) { 
-      return { count : prev.count + num }; });
+      return { ...prev, bigCount : prev.bigCount + num }; });
 
   return xs.merge(defaultReducer$, addOneReducer$);
 }
@@ -30,7 +33,7 @@ function view(state$: MemoryStream<State>, select$: Stream<VNode>): Stream<VNode
   return xs.combine(state$, select$).map(([ state, select ]) =>
     <div>
       <div>
-        App Counter { state.count }
+        App Counter { state.bigCount }
       </div>
       <div>
         <input type="text" className="incrementer" placeholder="incrementer" />
@@ -42,7 +45,7 @@ function view(state$: MemoryStream<State>, select$: Stream<VNode>): Stream<VNode
 }
 
 export default function App(sources$ : Sources) : Sinks {
-  const select = isolate(Select)(sources$)
+  const select = isolate(Select, 'childCount')(sources$)
   const state$ = sources$.onion.state$
   const action$ = intent(sources$.DOM)
   const reducer$ = model(action$)
