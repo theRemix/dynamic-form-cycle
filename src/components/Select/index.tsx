@@ -1,32 +1,19 @@
 import xs, {Stream} from 'xstream'
-import {DOMSource} from '@cycle/dom'
+import {VNode, DOMSource} from '@cycle/dom'
 import {StateSource} from 'cycle-onionify'
 
-import {Sinks, State, Reducer} from '../../interfaces'
+import {Sinks, Sources, Reducer, FormField} from '../../interfaces'
 
-interface Sources {
-  DOM: DOMSource;
-  onion: StateSource<State>;
-};
-
-export default function Select(sources$ : Sources) : Sinks {
-  return {
-    DOM: view(sources$.onion.state$),
-    onion: intent(sources$.DOM)
-  }
-}
-
-function intent(DOM: DOMSource) {
-  const defaultReducer$ = xs.of<Reducer>(prev => prev || { name : '', value : null, options : [] });
+function intent(DOM: DOMSource): Stream<Reducer<FormField>> {
+  const defaultReducer$ = xs.of<Reducer<FormField>>(prev => prev || { name : '', value : null, options : [] });
 
   const select$ = DOM.select('.select').events('change')
-    .map(ev => state => ({ ...state, value: ev.target.value }));
+    .map(( event:Event ) => ( state:FormField ) => ({ ...state, value: (event.target as HTMLInputElement).value }));
 
   return xs.merge(defaultReducer$, select$);
 }
 
-function view(state$: Stream<State>) {
-
+function view(state$: Stream<FormField>) {
   return state$
     .map(({ name, options }) => options.length ? 
       <select name={name} className="select">
@@ -36,4 +23,11 @@ function view(state$: Stream<State>) {
         }
       </select> : ''
     );
+}
+
+export default function Select(sources$ : Sources<FormField>) : Sinks<FormField> {
+  return {
+    DOM: view(sources$.onion.state$) as Stream<VNode>,
+    onion: intent(sources$.DOM)
+  }
 }

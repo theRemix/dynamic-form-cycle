@@ -3,27 +3,20 @@ import {Stream} from 'xstream'
 import {DOMSource, VNode} from '@cycle/dom'
 import {StateSource} from 'cycle-onionify'
 
-type FormField = {
+export type FormField = {
   name: string,
   value: string,
   options: Array<string>
 }
 
-export type State = {
-  animal: FormField;
-  noise: FormField;
-}
+export type Reducer<S> = (prev: S) => S
 
-export type Reducer = (prev: State) => State
-
-export type Sources = {
+export type Sources<S> = {
   DOM : DOMSource;
-  onion : StateSource<State>;
+  onion : StateSource<S>;
 }
 
-export type Sinks = {
+export type Sinks<S> = {
   DOM : Stream<VNode>;
-  onion : Stream<Reducer>;
+  onion : Stream<Reducer<S>>;
 }
-
-export type Component = (s : Sources) => Sinks;

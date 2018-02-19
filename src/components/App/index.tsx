@@ -1,15 +1,20 @@
 import xs, {Stream, MemoryStream} from 'xstream'
-import { VNode, DOMSource } from '@cycle/dom'
+import {VNode} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 
-import {Sources, Sinks, State} from '../../interfaces'
+import {Sources, Sinks, Reducer, FormField} from '../../interfaces'
 import Select from '../Select'
 
-const animalNoises = {
+type State = {
+  animal: FormField;
+  noise: FormField;
+}
+
+const animalNoises:any = {
   bird : ['tweet', 'chirp'],
   cat  : ['meow', 'nyu'],
   dog : ['arf', 'ruff']
-};
+}
 
 function defaultReducer (prev: State): State {
   return (typeof prev === 'undefined') ? {
@@ -26,7 +31,7 @@ function defaultReducer (prev: State): State {
   } : prev
 }
 
-function model (action$: Stream<State>): Stream<Reducer> {
+function model (): Stream<Reducer<State>> {
   return xs.of(defaultReducer);
 }
 
@@ -51,10 +56,10 @@ function view(state$: MemoryStream<State>, animalSelect$: Stream<VNode>, noiseSe
   );
 }
 
-export default function App(sources$ : Sources) : Sinks {
+export default function App(sources$ : Sources<State>) : Sinks<State> {
   const animalLens = {
-    get: state => ({...state.animal}),
-    set: (state, childState) => ({
+    get: (state:any) => ({...state.animal}),
+    set: (state:State, childState:any) => ({
         ...state, 
         animal: { ...childState }, 
         noise: { ...state.noise, value : '', options : animalNoises[childState.value] }
@@ -63,11 +68,11 @@ export default function App(sources$ : Sources) : Sinks {
   const animalSelect = isolate(Select, { onion : animalLens })(sources$)
   const noiseSelect = isolate(Select, 'noise')(sources$)
   const state$ = sources$.onion.state$
-  const reducer$ = model(sources$.DOM)
+  const reducer$ = model()
   const vdom$ = view(state$, animalSelect.DOM, noiseSelect.DOM)
 
   return {
-    DOM: vdom$,
-    onion: xs.merge(reducer$, animalSelect.onion, noiseSelect.onion)
+    DOM: vdom$ as Stream<VNode>,
+    onion: xs.merge(animalSelect.onion, noiseSelect.onion) as Stream<Reducer<State>>
   }
 }
