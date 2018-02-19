@@ -73,6 +73,6 @@ export default function App(sources$ : Sources<State>) : Sinks<State> {
 
   return {
     DOM: vdom$ as Stream<VNode>,
-    onion: xs.merge(animalSelect.onion, noiseSelect.onion) as Stream<Reducer<State>>
+    onion: xs.merge(reducer$, animalSelect.onion, noiseSelect.onion) as Stream<Reducer<State>>
   }
 }
