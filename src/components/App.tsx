@@ -2,8 +2,8 @@ import xs, {Stream, MemoryStream} from 'xstream'
 import {VNode} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 
-import {Sources, Sinks, Reducer, FormField} from '../../interfaces'
-import Select from '../Select'
+import {Sources, Sinks, Reducer, FormField} from '../interfaces'
+import Select from './Select'
 
 type State = {
   animal: FormField;

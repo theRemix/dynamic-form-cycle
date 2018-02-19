@@ -2,7 +2,7 @@ import xs, {Stream} from 'xstream'
 import {VNode, DOMSource} from '@cycle/dom'
 import {StateSource} from 'cycle-onionify'
 
-import {Sinks, Sources, Reducer, FormField} from '../../interfaces'
+import {Sinks, Sources, Reducer, FormField} from '../interfaces'
 
 function intent(DOM: DOMSource): Stream<Reducer<FormField>> {
   const defaultReducer$ = xs.of<Reducer<FormField>>(prev => prev || { name : '', value : null, options : [] });
