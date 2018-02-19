@@ -5,11 +5,17 @@ import isolate from '@cycle/isolate'
 import {Sources, Sinks, State} from '../../interfaces'
 import Select from '../Select'
 
+const animalNoises = {
+  bird : ['tweet', 'chirp'],
+  cat  : ['meow', 'nyu'],
+  dog : ['arf', 'ruff']
+};
+
 function defaultReducer (prev: State): State {
   return (typeof prev === 'undefined') ? {
     animal: {
       value: null,
-      options: ['bird','cat','dog']
+      options: Object.keys(animalNoises)
     },
     noise: {
       value: null,
@@ -37,13 +43,22 @@ function view(state$: MemoryStream<State>, animalSelect$: Stream<VNode>, noiseSe
   return xs.combine(state$, animalSelect$, noiseSelect$).map(([ state, animalSelect, noiseSelect ]) =>
     <div>
       <h2>{state.animal.value}</h2>
-      {animalSelect}
+      <div>
+        {animalSelect}
+      </div>
+      <div>
+        {noiseSelect}
+      </div>
     </div>
   );
 }
 
 export default function App(sources$ : Sources) : Sinks {
-  const animalSelect = isolate(Select, 'animal')(sources$)
+  const animalLens = {
+    get: state => ({...state.animal}),
+    set: (state, childState) => ({...state, noise: { ...state.noise, options : animalNoises[childState.value] }})
+  };
+  const animalSelect = isolate(Select, { onion : animalLens })(sources$)
   const noiseSelect = isolate(Select, 'noise')(sources$)
   const state$ = sources$.onion.state$
   const action$ = intent(sources$.DOM)

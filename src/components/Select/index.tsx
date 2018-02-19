@@ -30,10 +30,10 @@ function view(state$: Stream<State>) {
   return state$
     .map(s => s.options)
     .map(options =>
-    <select className="animalSelect">
+    options.length ? <select className="animalSelect">
       {
         options.map(value => <option value={value}>{value}</option>)
       }
-    </select>
+    </select> : ''
     );
 }
