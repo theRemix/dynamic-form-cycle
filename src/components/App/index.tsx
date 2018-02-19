@@ -7,9 +7,13 @@ import Select from '../Select'
 
 function defaultReducer (prev: State): State {
   return (typeof prev === 'undefined') ? {
-    bigCount: 100,
-    childCount: {
-      count: 0
+    animal: {
+      value: null,
+      options: ['bird','cat','dog']
+    },
+    noise: {
+      value: null,
+      options: []
     }
   } : prev
 }
@@ -29,30 +33,25 @@ function model (action$: Stream<number>): Stream<Reducer> {
   return xs.merge(defaultReducer$, addOneReducer$);
 }
 
-function view(state$: MemoryStream<State>, select$: Stream<VNode>): Stream<VNode>{
-  return xs.combine(state$, select$).map(([ state, select ]) =>
+function view(state$: MemoryStream<State>, animalSelect$: Stream<VNode>, noiseSelect$: Stream<VNode>): Stream<VNode>{
+  return xs.combine(state$, animalSelect$, noiseSelect$).map(([ state, animalSelect, noiseSelect ]) =>
     <div>
-      <div>
-        App Counter { state.bigCount }
-      </div>
-      <div>
-        <input type="text" className="incrementer" placeholder="incrementer" />
-      </div>
-
-      {select}
+      <h2>{state.animal.value}</h2>
+      {animalSelect}
     </div>
   );
 }
 
 export default function App(sources$ : Sources) : Sinks {
-  const select = isolate(Select, 'childCount')(sources$)
+  const animalSelect = isolate(Select, 'animal')(sources$)
+  const noiseSelect = isolate(Select, 'noise')(sources$)
   const state$ = sources$.onion.state$
   const action$ = intent(sources$.DOM)
   const reducer$ = model(action$)
-  const vdom$ = view(state$, select.DOM)
+  const vdom$ = view(state$, animalSelect.DOM, noiseSelect.DOM)
 
   return {
     DOM: vdom$,
-    onion: xs.merge(reducer$, select.onion)
+    onion: xs.merge(reducer$, animalSelect.onion, noiseSelect.onion)
   }
 }
