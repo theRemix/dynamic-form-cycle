@@ -19,21 +19,20 @@ export default function Select(sources$ : Sources) : Sinks {
 function intent(DOM: DOMSource) {
   const defaultReducer$ = xs.of<Reducer>(prev => prev || { value : null, options : [] });
 
-  const animalSelect$ = DOM.select('.animalSelect').events('change')
+  const select$ = DOM.select('.select').events('change')
     .map(ev => state => ({ ...state, value: ev.target.value }));
 
-  return xs.merge(defaultReducer$, animalSelect$);
+  return xs.merge(defaultReducer$, select$);
 }
 
 function view(state$: Stream<State>) {
 
   return state$
-    .map(s => s.options)
-    .map(options =>
-    options.length ? <select className="animalSelect">
-      {
-        options.map(value => <option value={value}>{value}</option>)
-      }
-    </select> : ''
+    .map(({ name, options }) => options.length ? 
+      <select name={name} className="select">
+        {
+          options.map(value => <option value={value}>{value}</option>)
+        }
+      </select> : ''
     );
 }

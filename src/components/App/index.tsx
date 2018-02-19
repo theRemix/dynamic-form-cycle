@@ -14,10 +14,12 @@ const animalNoises = {
 function defaultReducer (prev: State): State {
   return (typeof prev === 'undefined') ? {
     animal: {
+      name: 'animal',
       value: null,
       options: Object.keys(animalNoises)
     },
     noise: {
+      name: 'noise',
       value: null,
       options: []
     }
@@ -41,13 +43,18 @@ function model (action$: Stream<number>): Stream<Reducer> {
 
 function view(state$: MemoryStream<State>, animalSelect$: Stream<VNode>, noiseSelect$: Stream<VNode>): Stream<VNode>{
   return xs.combine(state$, animalSelect$, noiseSelect$).map(([ state, animalSelect, noiseSelect ]) =>
-    <div>
+    <form className="pure-form" action="http://postb.in/KFr1UPBm" method="POST">
       <h2>{state.animal.value}</h2>
       <div>
         {animalSelect}
       </div>
+      <h2>{state.noise.value}</h2>
       <div>
         {noiseSelect}
+      </div>
+      <div>
+        { state.noise.value !== null ? 
+          <button className="pure-button pure-button-primary">Submit</button> : '' }
       </div>
     </div>
   );
@@ -56,7 +63,11 @@ function view(state$: MemoryStream<State>, animalSelect$: Stream<VNode>, noiseSe
 export default function App(sources$ : Sources) : Sinks {
   const animalLens = {
     get: state => ({...state.animal}),
-    set: (state, childState) => ({...state, noise: { ...state.noise, options : animalNoises[childState.value] }})
+    set: (state, childState) => ({
+      ...state, 
+      animal: { ...childState }, 
+      noise: { ...state.noise, options : animalNoises[childState.value] }
+    })
   };
   const animalSelect = isolate(Select, { onion : animalLens })(sources$)
   const noiseSelect = isolate(Select, 'noise')(sources$)
