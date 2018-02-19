@@ -3,8 +3,15 @@ import {Stream} from 'xstream'
 import {DOMSource, VNode} from '@cycle/dom'
 import {StateSource} from 'cycle-onionify'
 
+type FormField = {
+  name: string,
+  value: string,
+  options: Array<string>
+}
+
 export type State = {
-  count : number;
+  animal: FormField;
+  noise: FormField;
 }
 
 export type Reducer = (prev: State) => State

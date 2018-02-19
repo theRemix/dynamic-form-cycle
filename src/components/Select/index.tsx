@@ -17,7 +17,7 @@ export default function Select(sources$ : Sources) : Sinks {
 }
 
 function intent(DOM: DOMSource) {
-  const defaultReducer$ = xs.of<Reducer>(prev => prev || { value : null, options : [] });
+  const defaultReducer$ = xs.of<Reducer>(prev => prev || { name : '', value : null, options : [] });
 
   const select$ = DOM.select('.select').events('change')
     .map(ev => state => ({ ...state, value: ev.target.value }));
