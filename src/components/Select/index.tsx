@@ -30,6 +30,7 @@ function view(state$: Stream<State>) {
   return state$
     .map(({ name, options }) => options.length ? 
       <select name={name} className="select">
+        <option disabled selected>Select Option...</option>
         {
           options.map(value => <option value={value}>{value}</option>)
         }

@@ -15,12 +15,12 @@ function defaultReducer (prev: State): State {
   return (typeof prev === 'undefined') ? {
     animal: {
       name: 'animal',
-      value: null,
+      value: '',
       options: Object.keys(animalNoises)
     },
     noise: {
       name: 'noise',
-      value: null,
+      value: '',
       options: []
     }
   } : prev
@@ -53,7 +53,7 @@ function view(state$: MemoryStream<State>, animalSelect$: Stream<VNode>, noiseSe
         {noiseSelect}
       </div>
       <div>
-        { state.noise.value !== null ? 
+        { state.noise.value !== '' ? 
           <button className="pure-button pure-button-primary">Submit</button> : '' }
       </div>
     </div>
@@ -64,9 +64,9 @@ export default function App(sources$ : Sources) : Sinks {
   const animalLens = {
     get: state => ({...state.animal}),
     set: (state, childState) => ({
-      ...state, 
-      animal: { ...childState }, 
-      noise: { ...state.noise, options : animalNoises[childState.value] }
+        ...state, 
+        animal: { ...childState }, 
+        noise: { ...state.noise, options : animalNoises[childState.value] }
     })
   };
   const animalSelect = isolate(Select, { onion : animalLens })(sources$)
