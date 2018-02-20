@@ -29,8 +29,17 @@ function defaultReducer (prev: State): State {
   } : prev
 }
 
-function model (): Stream<Reducer<State>> {
-  return xs.of(defaultReducer);
+function intent (DOM: DOMSource): Stream<Event> {
+  return DOM.select('form').events('submit', { preventDefault : true })
+    .map(( event: Event ) => event)
+}
+
+function model (action$: Stream<Event>): Stream<Reducer<State>> {
+  const defaultReducer$ = xs.of(defaultReducer);
+
+  const submit$ = action$.mapTo((state: State) => ({ ...state }));
+
+  return xs.merge(defaultReducer$, submit$);
 }
 
 function view(state$: MemoryStream<State>, animalSelect$: Stream<VNode>, noiseSelect$: Stream<VNode>): Stream<VNode>{
@@ -65,8 +74,9 @@ export default function App(sources$ : Sources<State>) : Sinks<State> {
   };
   const animalSelect = isolate(Select, { onion : animalLens })(sources$)
   const noiseSelect = isolate(Select, 'noise')(sources$)
+  const action$ = intent(sources$.DOM)
+  const reducer$ = model(action$)
   const state$ = sources$.onion.state$
-  const reducer$ = model()
   const vdom$ = view(state$, animalSelect.DOM, noiseSelect.DOM)
 
   return {
