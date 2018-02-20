@@ -59,7 +59,7 @@ function view(state$: MemoryStream<State>, animalSelect$: Stream<VNode>, noiseSe
 export default function App(sources$ : Sources<State>) : Sinks<State> {
   const animalLens = {
     get: (state:any) => ({...state.animal}),
-    set: (state:State, childState:any) => ({
+    set: (state:State, childState:FormField) => ({
         ...state, 
         animal: { ...childState }, 
         noise: { ...state.noise, value : '', options : animalNoises[childState.value] }
