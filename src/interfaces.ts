@@ -3,8 +3,9 @@ import {Stream} from 'xstream'
 import {DOMSource, VNode} from '@cycle/dom'
 import {StateSource} from 'cycle-onionify'
 
+export const OTHER = 'Other...';
+
 export type FormField = {
-  name: string,
   value: string,
   options: Array<string>
 }

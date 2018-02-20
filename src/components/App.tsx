@@ -2,7 +2,7 @@ import xs, {Stream, MemoryStream} from 'xstream'
 import {VNode} from '@cycle/dom'
 import isolate from '@cycle/isolate'
 
-import {Sources, Sinks, Reducer, FormField} from '../interfaces'
+import {Sources, Sinks, Reducer, FormField, OTHER} from '../interfaces'
 import Select from './Select'
 
 type State = {
@@ -12,19 +12,17 @@ type State = {
 
 const animalNoises:any = {
   bird : ['', 'tweet', 'chirp'],
-  cat  : ['', 'meow', 'nyu'],
-  dog : ['', 'arf', 'ruff']
+  cat  : ['', 'meow', 'nyu', OTHER],
+  dog : ['', 'arf', 'ruff', OTHER]
 }
 
 function defaultReducer (prev: State): State {
   return (typeof prev === 'undefined') ? {
     animal: {
-      name: 'animal',
       value: '',
       options: ['', ...Object.keys(animalNoises)]
     },
     noise: {
-      name: 'noise',
       value: '',
       options: []
     }
