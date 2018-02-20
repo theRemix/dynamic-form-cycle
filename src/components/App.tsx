@@ -11,9 +11,9 @@ type State = {
 }
 
 const animalNoises:any = {
-  bird : ['tweet', 'chirp'],
-  cat  : ['meow', 'nyu'],
-  dog : ['arf', 'ruff']
+  bird : ['', 'tweet', 'chirp'],
+  cat  : ['', 'meow', 'nyu'],
+  dog : ['', 'arf', 'ruff']
 }
 
 function defaultReducer (prev: State): State {
@@ -21,7 +21,7 @@ function defaultReducer (prev: State): State {
     animal: {
       name: 'animal',
       value: '',
-      options: Object.keys(animalNoises)
+      options: ['', ...Object.keys(animalNoises)]
     },
     noise: {
       name: 'noise',

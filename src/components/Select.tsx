@@ -15,18 +15,16 @@ function intent(DOM: DOMSource): Stream<Reducer<FormField>> {
 
 function view(state$: Stream<FormField>) {
   return state$
-    .map(({ name, options }) => ({
-      name,
-      options : [ null, ...options ]
-    })) 
-    .map(({ name, options }) =>  
+    .map(({ name, options, value }) => options.length > 0 ?
       <select name={name} className="select">
-        {options.map( value => value === null ?
+        {options.map( optionValue => optionValue === '' && value === '' ?
             <option disabled selected>Select Option...</option> :
-            <option value={value}>{value}</option>
+            optionValue === value ?
+              <option value={optionValue} selected>{optionValue}</option> :
+              <option value={optionValue}>{optionValue}</option>
           )
         }
-      </select>
+      </select> : ''
     );
 }
 
