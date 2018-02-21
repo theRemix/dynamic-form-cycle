@@ -1,13 +1,28 @@
 import xs, {Stream, MemoryStream} from 'xstream'
-import {VNode} from '@cycle/dom'
+import sampleCombine from 'xstream/extra/sampleCombine'
+import {VNode, DOMSource} from '@cycle/dom'
+import {HTTPSource} from '@cycle/http'
 import isolate from '@cycle/isolate'
+import {StateSource} from 'cycle-onionify'
 
-import {Sources, Sinks, Reducer, FormField, OTHER} from '../interfaces'
+import {Reducer, FormField, OTHER} from '../interfaces'
 import Select from './Select'
 
 type State = {
   animal: FormField;
   noise: FormField;
+}
+
+type Sinks = {
+  DOM : Stream<VNode>;
+  HTTP : Stream<any>;
+  onion : Stream<Reducer<State>>;
+}
+
+type Sources = {
+  DOM : DOMSource;
+  HTTP : Response;
+  onion : StateSource<State>;
 }
 
 const animalNoises:any = {
@@ -29,22 +44,29 @@ function defaultReducer (prev: State): State {
   } : prev
 }
 
-function intent (DOM: DOMSource): Stream<Event> {
-  return DOM.select('form').events('submit', { preventDefault : true })
-    .map(( event: Event ) => event)
+function intent (sources$: Sources) {
+  return sources$.DOM.select('form')
+    .events('submit', { preventDefault : true })
+    .compose(sampleCombine(sources$.onion.state$))
+    .map(([ event, state ]) => ({
+      url: '/api/endpoint',
+      category: 'Form',
+      method: 'POST',
+      type: 'application/json',
+      send: {
+        animal : state.animal.value,
+        noise : state.noise.value
+      }
+    }))
 }
 
-function model (action$: Stream<Event>): Stream<Reducer<State>> {
-  const defaultReducer$ = xs.of(defaultReducer);
-
-  const submit$ = action$.mapTo((state: State) => ({ ...state }));
-
-  return xs.merge(defaultReducer$, submit$);
+function model (): Stream<Reducer<State>> {
+  return xs.of(defaultReducer);
 }
 
 function view(state$: MemoryStream<State>, animalSelect$: Stream<VNode>, noiseSelect$: Stream<VNode>): Stream<VNode>{
   return xs.combine(state$, animalSelect$, noiseSelect$).map(([ state, animalSelect, noiseSelect ]) =>
-    <form className="pure-form" action="http://postb.in/KFr1UPBm" method="POST">
+    <form className="pure-form">
       <code><pre>payload : {JSON.stringify({
         animal : state.animal.value,
         noise : state.noise.value
@@ -63,7 +85,7 @@ function view(state$: MemoryStream<State>, animalSelect$: Stream<VNode>, noiseSe
   );
 }
 
-export default function App(sources$ : Sources<State>) : Sinks<State> {
+export default function App(sources$ : Sources) : Sinks {
   const animalLens = {
     get: (state:any) => ({...state.animal}),
     set: (state:State, childState:FormField) => ({
@@ -74,13 +96,14 @@ export default function App(sources$ : Sources<State>) : Sinks<State> {
   };
   const animalSelect = isolate(Select, { onion : animalLens })(sources$)
   const noiseSelect = isolate(Select, 'noise')(sources$)
-  const action$ = intent(sources$.DOM)
-  const reducer$ = model(action$)
+  const action$ = intent(sources$)
+  const reducer$ = model()
   const state$ = sources$.onion.state$
   const vdom$ = view(state$, animalSelect.DOM, noiseSelect.DOM)
 
   return {
     DOM: vdom$ as Stream<VNode>,
-    onion: xs.merge(reducer$, animalSelect.onion, noiseSelect.onion) as Stream<Reducer<State>>
+    HTTP: action$,
+    onion: xs.merge(reducer$, animalSelect.onion, noiseSelect.onion) as Stream<Reducer<State>>,
   }
 }

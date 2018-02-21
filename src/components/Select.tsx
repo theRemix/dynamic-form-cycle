@@ -2,7 +2,17 @@ import xs, { Stream } from 'xstream'
 import { VNode, DOMSource } from '@cycle/dom'
 import { StateSource } from 'cycle-onionify'
 
-import { Sinks, Sources, Reducer, FormField, OTHER } from '../interfaces'
+import { Reducer, FormField, OTHER } from '../interfaces'
+
+type Sinks = {
+  DOM : Stream<VNode>;
+  onion : Stream<Reducer<FormField>>;
+}
+
+type Sources = {
+  DOM : DOMSource;
+  onion : StateSource<FormField>;
+}
 
 function intent(DOM: DOMSource): Stream<Reducer<FormField>> {
   const defaultReducer$ = xs.of<Reducer<FormField>>(prev => prev || { value: null, options: [] });
@@ -17,7 +27,7 @@ function intent(DOM: DOMSource): Stream<Reducer<FormField>> {
 }
 
 function view(state$: Stream<FormField>) {
-  const toOptions = value => optionValue =>
+  const toOptions = ( value:string ) => ( optionValue:string ) =>
     ( optionValue === '' && value === '' ) ?
       <option disabled selected>Select Option...</option> :
       ( optionValue === value ) ?
@@ -31,10 +41,12 @@ function view(state$: Stream<FormField>) {
           {options.map(toOptions(value))}
         </select>
         {!options.filter(o => o !== OTHER).includes(value) ? <input type="text" className="custom-input" /> : ''}
-      </div> : '';
+      </div> : '');
 }
 
-export default function Select(sources$: Sources<FormField>): Sinks<FormField> {
+// video: what if the user was a function
+
+export default function Select(sources$: Sources): Sinks {
   return {
     DOM: view(sources$.onion.state$) as Stream<VNode>,
     onion: intent(sources$.DOM)
